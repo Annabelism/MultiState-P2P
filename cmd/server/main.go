@@ -1,14 +1,20 @@
 package main
 
 import (
-	"fmt"
-	// other necessary imports
+	"MultiState-P2P/pkg/network"
+	"MultiState-P2P/pkg/protocol"
 )
 
 func main() {
-	fmt.Println("Initializing peer...")
-	// Initialize peer (setting up connections, resources, etc.)
-	// Set up handlers for incoming requests
-	// Set up ability to make outgoing requests
-	// Start necessary services (like a listener for incoming connections)
+	// Initializing a node and connecting to the network
+	my_IP := "my ip address"
+	peer_IP := "some ip address"
+
+	myNode := network.NewNode(my_IP, "myAccessToken")
+	err := network.ConnectToNetwork(myNode, peer_IP) // IP of a known peer
+	if err != nil {
+		// Handle error
+	}
+
+	// The node would then listen for incoming requests and handle them accordingly
 }

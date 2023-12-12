@@ -9,6 +9,21 @@ const (
 	Remove Action = "remove"
 )
 
+// Define the types of requests that can be handled
+type RequestType string
+
+const (
+	ConnectionReqType RequestType = "Connection"
+	DownloadReqType   RequestType = "Download"
+	UpdateReqType     RequestType = "Update"
+)
+
+// Request is a wrapper for different types of requests in the network
+type Request struct {
+	Type    RequestType
+	Payload interface{} // Payload can be any of the defined request types
+}
+
 // ConnectionRequest is used when a new device wants to join the network
 type ConnectionRequest struct {
 	DestinationIP string
@@ -41,10 +56,4 @@ func (ut *UpdateTuple) IsValid() bool {
 	default:
 		return false
 	}
-}
-
-// Authenticate validates the access token in the ConnectionRequest
-func (cr *ConnectionRequest) Authenticate() bool {
-	// This should be replaced with actual authentication logic
-	return cr.AccessToken == "validToken"
 }
