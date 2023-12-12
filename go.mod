@@ -1,0 +1,3 @@
+module MULTISTATE-P2P
+
+go 1.21.1
