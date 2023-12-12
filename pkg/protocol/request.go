@@ -1,5 +1,11 @@
 package protocol
 
+import (
+	"fmt"
+	"net"
+    "encoding/json"
+)
+
 // Define the types of actions that can be used in update requests
 type Action string
 
@@ -56,4 +62,21 @@ func (ut *UpdateTuple) IsValid() bool {
 	default:
 		return false
 	}
+}
+
+// SendRequest sends a request over a TCP connection
+func SendRequest(conn net.Conn, req interface{}) error {
+    // Convert the request to JSON
+    jsonData, err := json.Marshal(req)
+    if err != nil {
+        return fmt.Errorf("error marshalling request: %w", err)
+    }
+
+    // Send the JSON data
+    _, err = conn.Write(jsonData)
+    if err != nil {
+        return fmt.Errorf("error sending request: %w", err)
+    }
+
+    return nil
 }

@@ -21,7 +21,7 @@ type Node struct {
 	IP         string
 	State      NodeState
 	Buffer     []protocol.Request // Assuming Request is a struct that handles requests.
-	TableH     map[string][]string // Map of file names to a list of IPs that store them.
+	TableH     *TableH // Map of file names to a list of IPs that store them.
 	AccessToken string
 }
 
@@ -31,7 +31,7 @@ func NewNode(IP, accessToken string) *Node {
 		IP:         IP,
 		State:      Idle,
 		Buffer:     make([]protocol.Request, 0),
-		TableH:     make(map[string][]string),
+		TableH:     NewTableH(),
 		AccessToken: accessToken,
 	}
 }
