@@ -41,3 +41,8 @@ func (n *Node) UpdateTableH(action protocol.Action, file string, nodeIP string) 
 	// Implementation of updating Table H goes here
 	// Depending on the action, it will add, delete, or remove an entry
 }
+
+// Check if buffer is empty, if not, deal with the request one by one
+func (n *Node) MovingAlongBuffer() {
+
+}

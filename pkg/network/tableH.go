@@ -53,3 +53,22 @@ func (t *TableH) RemoveNode(nodeIP string) {
 func (t *TableH) GetNodesWithFile(fileName string) []string {
     return t.entries[fileName]
 }
+
+// GetAllPeers returns a list of all unique IP addresses (peers) in the TableH.
+func (t *TableH) GetAllPeers() []string {
+    peerSet := make(map[string]struct{}) // A set to store unique IP addresses
+    var peers []string // A slice to store and return the list of unique peers
+
+    // Iterate through all files and their associated nodes
+    for _, ips := range t.entries {
+        for _, ip := range ips {
+            if _, exists := peerSet[ip]; !exists {
+                peerSet[ip] = struct{}{} // Add the IP to the set if it's not already there
+                peers = append(peers, ip) // Append the IP to the list
+            }
+        }
+    }
+
+    return peers
+}
+

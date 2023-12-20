@@ -3,6 +3,7 @@ package main
 import (
 	"MultiState-P2P/pkg/network"
 	"MultiState-P2P/pkg/protocol"
+	"fmt"
 )
 
 func main() {
@@ -13,7 +14,7 @@ func main() {
 	myNode := network.NewNode(my_IP, "myAccessToken")
 	err := network.ConnectToNetwork(myNode, peer_IP) // IP of a known peer
 	if err != nil {
-		// Handle error
+        fmt.Printf("error: %v\n", err)
 	}
 
 	// The node would then listen for incoming requests and handle them accordingly
