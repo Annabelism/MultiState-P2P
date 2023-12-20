@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"time"
 )
 
 // Transition handles state transitions for a node.
@@ -54,6 +55,31 @@ func (n *Node) handleShareState(event Event) {
 func (n *Node) handleRequestState(event Event) {
 	// Implement logic for when the node is in the Request state
 
+	timeout := 5 * time.Second
+	timeoutCh := time.After(timeout)
+
+	// Perform operations in a loop until timeout
+	for {
+		select {
+		case <-timeoutCh:
+			// Timeout occurred, exit the loop
+			//Need to implement: go back to idle state
+			fmt.Println("Timeout reached. Exiting loop.")
+			return
+		default:
+			//get peerIP, return connection
+			conn, err = ConnectToNetwork(n, peerIP)
+			// Continue performing your operations here
+			fmt.Println("Performing operation...")
+			// Simulate some work
+			req, err := MakeRequest(n)
+			if err != nil {
+				continue
+			}
+			//pass in peer node
+			protocol.SendRequest(conn, req)
+		}
+	}
 }
 
 func (n *Node) handleUpdateState(event Event) {
@@ -68,43 +94,45 @@ func (n *Node) handleDeadState(event Event) {
 	// Implement logic for when the node is in the Dead state
 }
 
-func MakeRequest(n *Node) interface{} {
+func MakeRequest(n *Node) (interface{}, error) {
 	//read from console. From https://freshman.tech/snippets/go/read-console-input/
 	//can be moved to node later
-	var req protocol.Request
-	fmt.Print("Choose your operation: Download(1), Update(2)")
+	fmt.Print("Choose your operation: download(1), update(2)")
 	input_req, err := ReadFromConsole()
 	if err != nil {
 		fmt.Print("Choose your operation: Download(1), Update(2)")
-		return nil
-	} else {
-		switch input_req {
-		case "download", "1":
-			req.Type = protocol.DownloadReqType
-			fmt.Print("Enter the file name you're requesting: ")
-			// ReadString will block until the delimiter is entered
-			input_file, err := ReadFromConsole()
-			if err != nil {
-				return nil
-			} else {
-				//temp. get one node that has the target file
-				destination_ip := n.TableH.GetNodesWithFile(input_file)[0]
-				req.Payload = protocol.DownloadRequest{
-					DestinationIP: destination_ip,
-					FileName:      input_file,
-				}
-			}
-
-		case "update", "2":
-			req.Type = protocol.UpdateReqType
-			return nil
-
-		default:
-			fmt.Println()
-			return nil
-		}
+		return nil, err
 	}
-	return nil
+	switch input_req {
+	case "download", "1":
+		fmt.Print("Enter the file name you're requesting: add(1), delete(2), remove(3)")
+		// read the file name from user input
+		input_file, err := ReadFromConsole()
+		if err != nil {
+			return nil, err
+		}
+		//change later. get one node that has the target file
+		destination_ip := n.TableH.GetNodesWithFile(input_file)[0]
+		req := protocol.CreateDownloadRequest(input_file, destination_ip)
+		return req, nil
+	case "update", "2":
+		fmt.Print("Enter the action you want to make: ")
+		// read the file name from user input
+		input_action, err := ReadFromConsole()
+		if err != nil {
+			return nil, err
+		}
+		fmt.Print("Enter the file you want to update: ")
+		input_index, err := ReadFromConsole()
+		if err != nil {
+			return nil, err
+		}
+		req := protocol.CreateUpdateRequest(input_action, input_index, n.IP)
+		return req, nil
+	default:
+		fmt.Println("Invalid input. Please try again.")
+		return nil, err
+	}
 }
 
 func ReadFromConsole() (string, error) {

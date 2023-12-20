@@ -1,9 +1,9 @@
 package protocol
 
 import (
+	"encoding/json"
 	"fmt"
 	"net"
-    "encoding/json"
 )
 
 // Define the types of actions that can be used in update requests
@@ -64,19 +64,44 @@ func (ut *UpdateTuple) IsValid() bool {
 	}
 }
 
+func CreateDownloadRequest(input_file string, destination_ip string) Request {
+	var req Request
+	req.Type = DownloadReqType
+	req.Payload = DownloadRequest{
+		DestinationIP: destination_ip,
+		FileName:      input_file,
+	}
+	return req
+}
+
+func CreateUpdateRequest(action string, index string, value string) Request {
+	var req Request
+	req.Type = UpdateReqType
+
+	update_tuple := []UpdateTuple{
+		{Action: Action(action)},
+		{Index: index},
+		{Value: value},
+	}
+	req.Payload = UpdateRequest{
+		Updates: []UpdateTuple(update_tuple),
+	}
+	return req
+}
+
 // SendRequest sends a request over a TCP connection
 func SendRequest(conn net.Conn, req interface{}) error {
-    // Convert the request to JSON
-    jsonData, err := json.Marshal(req)
-    if err != nil {
-        return fmt.Errorf("error marshalling request: %w", err)
-    }
+	// Convert the request to JSON
+	jsonData, err := json.Marshal(req)
+	if err != nil {
+		return fmt.Errorf("error marshalling request: %w", err)
+	}
 
-    // Send the JSON data
-    _, err = conn.Write(jsonData)
-    if err != nil {
-        return fmt.Errorf("error sending request: %w", err)
-    }
+	// Send the JSON data
+	_, err = conn.Write(jsonData)
+	if err != nil {
+		return fmt.Errorf("error sending request: %w", err)
+	}
 
-    return nil
+	return nil
 }
