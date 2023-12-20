@@ -1,5 +1,13 @@
 package network
 
+import (
+	"MultiState-P2P/pkg/protocol"
+	"bufio"
+	"fmt"
+	"os"
+	"strings"
+)
+
 // Transition handles state transitions for a node.
 func (n *Node) Transition(event Event) {
 	switch n.State {
@@ -45,6 +53,7 @@ func (n *Node) handleShareState(event Event) {
 
 func (n *Node) handleRequestState(event Event) {
 	// Implement logic for when the node is in the Request state
+
 }
 
 func (n *Node) handleUpdateState(event Event) {
@@ -57,4 +66,56 @@ func (n *Node) handleTransmitState(event Event) {
 
 func (n *Node) handleDeadState(event Event) {
 	// Implement logic for when the node is in the Dead state
+}
+
+func MakeRequest(n *Node) interface{} {
+	//read from console. From https://freshman.tech/snippets/go/read-console-input/
+	//can be moved to node later
+	var req protocol.Request
+	fmt.Print("Choose your operation: Download(1), Update(2)")
+	input_req, err := ReadFromConsole()
+	if err != nil {
+		fmt.Print("Choose your operation: Download(1), Update(2)")
+		return nil
+	} else {
+		switch input_req {
+		case "download", "1":
+			req.Type = protocol.DownloadReqType
+			fmt.Print("Enter the file name you're requesting: ")
+			// ReadString will block until the delimiter is entered
+			input_file, err := ReadFromConsole()
+			if err != nil {
+				return nil
+			} else {
+				//temp. get one node that has the target file
+				destination_ip := n.TableH.GetNodesWithFile(input_file)[0]
+				req.Payload = protocol.DownloadRequest{
+					DestinationIP: destination_ip,
+					FileName:      input_file,
+				}
+			}
+
+		case "update", "2":
+			req.Type = protocol.UpdateReqType
+			return nil
+
+		default:
+			fmt.Println()
+			return nil
+		}
+	}
+	return nil
+}
+
+func ReadFromConsole() (string, error) {
+	reader := bufio.NewReader(os.Stdin)
+	// ReadString will block until the delimiter is entered
+	input, err := reader.ReadString('\n')
+	if err != nil {
+		fmt.Println("An error occured while reading input. Please try again", err)
+		return "", err
+	}
+	// remove the delimeter from the string
+	input = strings.TrimSuffix(strings.ToLower(input), "\n")
+	return input, nil
 }
