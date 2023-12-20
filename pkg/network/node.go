@@ -2,6 +2,7 @@ package network
 
 import (
 	"MultiState-P2P/pkg/protocol"
+	"net"
 )
 
 // NodeState represents the state of a node in the network.
@@ -23,6 +24,7 @@ type Node struct {
 	Buffer     []protocol.Request // Assuming Request is a struct that handles requests.
 	TableH     *TableH // Map of file names to a list of IPs that store them.
 	AccessToken string
+	Connections map[string]net.Conn
 }
 
 // NewNode creates a new node with the given IP and access token.

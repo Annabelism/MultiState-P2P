@@ -68,7 +68,7 @@ func (n *Node) handleRequestState(event Event) {
 			return
 		default:
 			//get peerIP, return connection
-			conn, err = ConnectToNetwork(n, peerIP)
+			conn, err := ConnectToNetwork(n, peerIP)
 			// Continue performing your operations here
 			fmt.Println("Performing operation...")
 			// Simulate some work
