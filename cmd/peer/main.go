@@ -2,27 +2,30 @@ package main
 
 import (
 	"MultiState-P2P/pkg/network"
+	"bufio"
 	"fmt"
+	"net"
 	"os"
-	"strings"
 	"sync"
 )
 
 func main() {
-	// Use GetLocalIP from network package
+	// Initializing a node and connecting to the network
 	ip, err := network.GetLocalIP()
 	if err != nil {
 		fmt.Println("Error getting local IP:", err)
 		os.Exit(1)
 	}
 
-	port := "8888"
+	// Define a port
+	port := "8880"
+
+	// Combine IP and port
 	my_IP := ip + ":" + port
-	peer_IP := "some ip address"
+	peer_IP := "localhost:8888"
 
 	myNode := network.NewNode(my_IP, "myAccessToken")
-	fmt.Printf("node built for peer A\n")
-	conn, err := network.ConnectToNetwork(myNode, peer_IP)
+	_, err = network.ConnectToNetwork(myNode, peer_IP) // IP of a known peer
 	if err != nil {
 		fmt.Printf("error: %v\n", err)
 	}
@@ -42,12 +45,10 @@ func main() {
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
+		fmt.Print("Choose your request: download(1), update(2), cancel request(x)\n")
 		for {
-			reader := bufio.NewReader(os.Stdin)
-			fmt.Print("Enter 'request' to start an request: ")
-			text, _ := reader.ReadString('\n')
-			input := strings.TrimSuffix(strings.ToLower(text), "\n")
-			terminalInput <- input
+			input_req, _ := network.ReadFromConsole()
+			terminalInput <- input_req
 		}
 	}()
 
@@ -83,7 +84,7 @@ func main() {
 			fmt.Println("Received from terminal:", input)
 
 			//create and handle request
-			network.MakeRequest(myNode)
+			network.MakeRequest(myNode, input)
 
 			// // Check if the input is 'exit' to quit the program
 			// if input == "exit\n" {
@@ -108,15 +109,13 @@ func main() {
 func handleTCPConnection(conn net.Conn, tcpInput chan<- string) {
 	defer conn.Close()
 
-	// Now you can use BuildConnections to establish connections with peers
-	err = network.BuildConnections(myNode)
-	if err != nil {
-		fmt.Println("Error building connections:", err)
-		return
+	reader := bufio.NewReader(conn)
+	for {
+		data, err := reader.ReadString('\n')
+		if err != nil {
+			fmt.Println("Error reading from TCP connection:", err)
+			return
+		}
+		tcpInput <- data
 	}
-
-	// Rest of your main function...
-
-	// On program exit, disconnect from the network
-	defer network.DisconnectFromNetwork(myNode)
 }
