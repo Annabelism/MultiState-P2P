@@ -1,5 +1,9 @@
 package network
 
+import (
+    "fmt"
+)
+
 // TableH represents a table mapping from an "IP:port" string to a list of filenames.
 type TableH struct {
     entries map[string][]string
@@ -64,4 +68,10 @@ func (t *TableH) GetNodesWithFile(fileName string) []string {
         }
     }
     return nodesWithFile
+}
+
+func PrintTableH(table *TableH) {
+    for key, values := range table.entries {
+        fmt.Printf("%s: %v\n", key, values)
+    }
 }

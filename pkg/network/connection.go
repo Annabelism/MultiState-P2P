@@ -117,7 +117,7 @@ func BuildConnections(n *Node) error {
 			continue
 		}
 
-		ln, err := net.Listen("tcp", peerIP) // Replace ":8080" with your port
+		ln, err := net.Listen("tcp", ":8888") // Replace ":8080" with your port
 		if err != nil {
 			return fmt.Errorf("error listening: %w", err)
 		}
