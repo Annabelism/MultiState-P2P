@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net"
 	"os"
+	"strings"
 	"sync"
 )
 
@@ -25,7 +26,7 @@ func main() {
 	peer_IP := "some ip address"
 
 	myNode := network.NewNode(my_IP, "myAccessToken")
-	conn, err := network.ConnectToNetwork(myNode, peer_IP) // IP of a known peer
+	_, err = network.ConnectToNetwork(myNode, peer_IP) // IP of a known peer
 	if err != nil {
 		fmt.Printf("error: %v\n", err)
 	}
@@ -47,9 +48,10 @@ func main() {
 		defer wg.Done()
 		for {
 			reader := bufio.NewReader(os.Stdin)
-			fmt.Print("Enter text (or 'exit' to quit): ")
+			fmt.Print("Enter 'request' to start an request: ")
 			text, _ := reader.ReadString('\n')
-			terminalInput <- text
+			input := strings.TrimSuffix(strings.ToLower(text), "\n")
+			terminalInput <- input
 		}
 	}()
 
@@ -58,7 +60,9 @@ func main() {
 	go func() {
 		defer wg.Done()
 		// Simulate opening TCP connections (replace with your actual code)
-		listener, err := net.Listen("tcp", ":8080")
+		network.BuildConnections(myNode)
+
+		listener, err := net.Listen("tcp", ":8888")
 		if err != nil {
 			fmt.Println("Error:", err)
 			return
@@ -71,7 +75,7 @@ func main() {
 				fmt.Println("Error accepting connection:", err)
 				continue
 			}
-			go handleTCPConnection(conn, tcpInput)
+			go myNode.HandleRequest(conn)
 		}
 	}()
 
@@ -82,22 +86,24 @@ func main() {
 			// Handle terminal input
 			fmt.Println("Received from terminal:", input)
 
-			// Check if the input is 'exit' to quit the program
-			if input == "exit\n" {
-				fmt.Println("Exiting program.")
-				// Close the TCP listener to stop accepting new connections
-				// (You may need additional logic to gracefully close existing connections)
-				os.Exit(0)
-			}
+			//create and handle request
+			network.MakeRequest(myNode)
+
+			// // Check if the input is 'exit' to quit the program
+			// if input == "exit\n" {
+			// 	fmt.Println("Exiting program.")
+			// 	// Close the TCP listener to stop accepting new connections
+			// 	// (You may need additional logic to gracefully close existing connections)
+			// 	os.Exit(0)
+			// }
 
 		case tcpData := <-tcpInput:
 			// Handle data received from TCP connections
 			fmt.Println("Received from TCP connection:", tcpData)
 
-		// Add additional cases for handling other channels if needed
-
 		default:
 			// Do other work or continue looping
+			continue
 		}
 	}
 }
