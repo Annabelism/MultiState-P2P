@@ -119,11 +119,11 @@ func BuildConnections(n *Node) error {
 
 		ln, err := net.Listen("tcp", peerIP) // Replace ":8080" with your port
 		if err != nil {
-			return fmt.Errorf("Error listening: %w", err)
+			return fmt.Errorf("error listening: %w", err)
 		}
 		defer ln.Close()
 
-		fmt.Println("Server is listening on peer %s", peerIP)
+		fmt.Printf("Server is listening on peer %s\n", peerIP)
 
 		// Accept connections in a loop
 		for {
@@ -149,7 +149,7 @@ func BuildConnections(n *Node) error {
 }
 
 // getLocalIP returns the non loopback local IP of the host
-func getLocalIP() (string, error) {
+func GetLocalIP() (string, error) {
 	addrs, err := net.InterfaceAddrs()
 	if err != nil {
 		return "", err
