@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"net"
 	"os"
-	"strings"
 	"sync"
 )
 
@@ -23,7 +22,7 @@ func main() {
 
 	// Combine IP and port
 	my_IP := ip + ":" + port
-	peer_IP := "some ip address"
+	peer_IP := "localhost:8888"
 
 	myNode := network.NewNode(my_IP, "myAccessToken")
 	_, err = network.ConnectToNetwork(myNode, peer_IP) // IP of a known peer
@@ -46,12 +45,10 @@ func main() {
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
+		fmt.Print("Choose your request: download(1), update(2), cancel request(x)\n")
 		for {
-			reader := bufio.NewReader(os.Stdin)
-			fmt.Print("Enter 'request' to start an request: ")
-			text, _ := reader.ReadString('\n')
-			input := strings.TrimSuffix(strings.ToLower(text), "\n")
-			terminalInput <- input
+			input_req, _ := network.ReadFromConsole()
+			terminalInput <- input_req
 		}
 	}()
 
@@ -87,7 +84,7 @@ func main() {
 			fmt.Println("Received from terminal:", input)
 
 			//create and handle request
-			network.MakeRequest(myNode)
+			network.MakeRequest(myNode, input)
 
 			// // Check if the input is 'exit' to quit the program
 			// if input == "exit\n" {
