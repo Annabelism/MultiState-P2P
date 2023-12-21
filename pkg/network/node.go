@@ -5,7 +5,7 @@ import (
 	"net"
     "encoding/json"
     "fmt"
-    "io/ioutil"
+    "io"
 )
 
 // NodeState represents the state of a node in the network.
@@ -55,7 +55,7 @@ func (n *Node) HandleRequest(conn net.Conn) error {
     fmt.Printf("Received connection from %s:%s\n", senderIP, senderPort)
     // Add logic here to handle the request
 
-	jsonData, err := ioutil.ReadAll(conn)
+	jsonData, err := io.ReadAll(conn)
     if err != nil {
         return fmt.Errorf("error reading request data: %w", err)
     }
