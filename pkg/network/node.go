@@ -2,30 +2,30 @@ package network
 
 import (
 	"MultiState-P2P/pkg/protocol"
+	"encoding/json"
+	"fmt"
+	"io"
 	"net"
-    "encoding/json"
-    "fmt"
-    "io"
 )
 
 // NodeState represents the state of a node in the network.
 type NodeState string
 
 const (
-	Idle    NodeState = "Idle"
-	Share   NodeState = "Share"
-	Request NodeState = "Request"
-	Update  NodeState = "Update"
+	Idle     NodeState = "Idle"
+	Share    NodeState = "Share"
+	Request  NodeState = "Request"
+	Update   NodeState = "Update"
 	Transmit NodeState = "Transmit"
-	Dead    NodeState = "Dead" // Inactive state
+	Dead     NodeState = "Dead" // Inactive state
 )
 
 // Node represents a peer in the network.
 type Node struct {
-	IP         string
-	State      NodeState
-	Buffer     []protocol.Request // Assuming Request is a struct that handles requests.
-	TableH     *TableH // Map of file names to a list of IPs that store them.
+	IP          string
+	State       NodeState
+	Buffer      []protocol.Request // Assuming Request is a struct that handles requests.
+	TableH      *TableH            // Map of file names to a list of IPs that store them.
 	AccessToken string
 	Connections map[string]net.Conn
 }
@@ -33,46 +33,48 @@ type Node struct {
 // NewNode creates a new node with the given IP and access token.
 func NewNode(IP, accessToken string) *Node {
 	return &Node{
-		IP:         IP,
-		State:      Idle,
-		Buffer:     make([]protocol.Request, 0),
-		TableH:     NewTableH(),
+		IP:          IP,
+		State:       Idle,
+		Buffer:      make([]protocol.Request, 0),
+		TableH:      NewTableH(),
 		AccessToken: accessToken,
 		Connections: make(map[string]net.Conn),
 	}
 }
 
 func (n *Node) HandleRequest(conn net.Conn) error {
-    // Get the sender's address
-    senderAddr := conn.RemoteAddr().String()
+	// Get the sender's address
+	senderAddr := conn.RemoteAddr().String()
 
-    // Split the address into IP and port
-    senderIP, senderPort, err := net.SplitHostPort(senderAddr)
-    if err != nil {
-        return fmt.Errorf("failed to parse remote address: %w", err)
-    }
+	// Split the address into IP and port
+	senderIP, senderPort, err := net.SplitHostPort(senderAddr)
+	if err != nil {
+		return fmt.Errorf("failed to parse remote address: %w", err)
+	}
 
-    fmt.Printf("Received connection from %s:%s\n", senderIP, senderPort)
-    // Add logic here to handle the request
+	fmt.Printf("Received connection from %s:%s\n", senderIP, senderPort)
+	// Add logic here to handle the request
 
 	jsonData, err := io.ReadAll(conn)
-    if err != nil {
-        return fmt.Errorf("error reading request data: %w", err)
-    }
+	if err != nil {
+		return fmt.Errorf("error reading request data: %w", err)
+	}
 
-    // Unmarshal JSON data into a Request struct
-    var req protocol.Request
-    err = json.Unmarshal(jsonData, &req)
-    if err != nil {
-        return fmt.Errorf("error unmarshalling request JSON: %w", err)
-    }
+	// Unmarshal JSON data into a Request struct
+	var req protocol.Request
+	err = json.Unmarshal(jsonData, &req)
+	if err != nil {
+		return fmt.Errorf("error unmarshalling request JSON: %w", err)
+	}
 
-    // Process the request based on the content of the req object
-    // Check the request type and process accordingly
+	// Process the request based on the content of the req object
+	// Check the request type and process accordingly
 	switch req.Type {
-    case protocol.UpdateReqType:
-		updateReq := req.Payload
-	
+	case protocol.UpdateReqType:
+		updateReq, ok := req.Payload.(protocol.UpdateRequest)
+		if !ok {
+			return fmt.Errorf("payload is not an UpdateRequest")
+		}
 		// Process each UpdateTuple
 		for _, updateTuple := range updateReq.Updates {
 			fmt.Printf("Action: %s, Index: %s, Value: %s\n", updateTuple.Action, updateTuple.Index, updateTuple.Value)
@@ -84,7 +86,7 @@ func (n *Node) HandleRequest(conn net.Conn) error {
 			case protocol.Delete:
 				fmt.Printf("Delete Action - Index: %s\n", updateTuple.Index)
 				n.TableH.RemoveEntry(updateTuple.Index, updateTuple.Value)
-	
+
 			case protocol.Remove:
 				fmt.Printf("Remove Action - Index: %s\n", updateTuple.Index)
 				n.TableH.RemoveNode(updateTuple.Index)
@@ -94,9 +96,12 @@ func (n *Node) HandleRequest(conn net.Conn) error {
 				fmt.Printf("Unknown Action: %s\n", updateTuple.Action)
 			}
 		}
-	
+
 	case protocol.DownloadReqType:
-		downloadReq := req.Payload
+		downloadReq, ok := req.Payload.(protocol.DownloadRequest)
+		if !ok {
+			return fmt.Errorf("payload is not a DownloadRequest")
+		}
 		filename := downloadReq.FileName
 		downloadResp, err := protocol.CreateDownloadResponse("here is your file", filename)
 		if err != nil {
@@ -108,9 +113,12 @@ func (n *Node) HandleRequest(conn net.Conn) error {
 		}
 
 	case protocol.ConnectionReqType:
-		
-		ConnectionResp := HandleConnectionRequest(n, req.Payload)
+		connectionReq, ok := req.Payload.(protocol.ConnectionRequest)
+		if !ok {
+			return fmt.Errorf("payload is not a ConnectionRequest")
+		}
+		ConnectionResp := HandleConnectionRequest(n, connectionReq)
 		fmt.Printf("%#v\n", ConnectionResp)
-    }
-    return nil
+	}
+	return nil
 }
