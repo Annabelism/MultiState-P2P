@@ -95,18 +95,10 @@ import (
 // 	// Implement logic for when the node is in the Dead state
 // }
 
-func MakeRequest(n *Node) (interface{}, error) {
+func MakeRequest(n *Node, input_req string) (interface{}, error) {
 	//read from console. From https://freshman.tech/snippets/go/read-console-input/
 	//can be moved to node later
-	fmt.Print("Choose your request: download(1), update(2), cancel request(x)\n")
-	input_req, err := ReadFromConsole()
-	if err != nil {
-		return nil, err
-	}
-	if input_req == "x" {
-		fmt.Println("Request Canceled.")
-		return nil, util.CanceledRequestError("Request Canceled")
-	}
+
 	switch input_req {
 	case "download", "1":
 		fmt.Print("Enter the file name you're requesting (or enter 'x' to cancel request): \n")
@@ -117,6 +109,7 @@ func MakeRequest(n *Node) (interface{}, error) {
 		}
 		if input_file == "x" {
 			fmt.Println("Request Canceled.")
+			fmt.Print("Choose your request: download(1), update(2), cancel request(x)\n")
 			return nil, util.CanceledRequestError("Request Canceled")
 		}
 		//change later. get one node that has the target file
@@ -132,6 +125,7 @@ func MakeRequest(n *Node) (interface{}, error) {
 		}
 		if input_action == "x" {
 			fmt.Println("Request Canceled.")
+			fmt.Print("Choose your request: download(1), update(2), cancel request(x)\n")
 			return nil, util.CanceledRequestError("Request Canceled")
 		}
 		fmt.Print("Enter the file you want to update (enter 'x' to cancel request): \n")
@@ -141,13 +135,19 @@ func MakeRequest(n *Node) (interface{}, error) {
 		}
 		if input_index == "x" {
 			fmt.Println("Request Canceled.")
+			fmt.Print("Choose your request: download(1), update(2), cancel request(x)\n")
 			return nil, util.CanceledRequestError("Request Canceled")
 		}
 		req := protocol.CreateUpdateRequest(input_action, input_index, n.IP)
 		return req, nil
+	case "x":
+		fmt.Println("Request Canceled.")
+		fmt.Print("Choose your request: download(1), update(2), cancel request(x)\n")
+		return nil, util.CanceledRequestError("Request Canceled")
 	default:
 		fmt.Println("Invalid input. Please try again.")
-		return nil, err
+		fmt.Print("Choose your request: download(1), update(2), cancel request(x)\n")
+		return nil, util.InvalidInputError("Invalid Input")
 	}
 }
 
