@@ -76,7 +76,7 @@ func HandleConnectionRequest(n *Node, req protocol.ConnectionRequest) protocol.C
 
 	// Propagate the updated Table H to all peers, including the new node
 	// Get all peers from the node's TableH
-	allPeers := n.TableH.GetAllPeers()
+	allPeers := n.TableH.GetAllNodes()
 
 	// Iterate through all peers
 	for _, peerIP := range allPeers {
@@ -109,7 +109,7 @@ func HandleConnectionRequest(n *Node, req protocol.ConnectionRequest) protocol.C
 
 // BuildConnections establishes TCP connections with all peers and stores them in the Connections map
 func BuildConnections(n *Node) error {
-	peers := n.TableH.GetAllPeers() // Assuming GetAllPeers returns a slice of peer IP addresses
+	peers := n.TableH.GetAllNodes() // Assuming GetAllPeers returns a slice of peer IP addresses
 
 	for _, peerIP := range peers {
 		// Avoid connecting to self
