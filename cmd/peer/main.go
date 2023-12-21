@@ -9,6 +9,8 @@ import (
 	"sync"
 )
 
+var my_port = "8887"
+
 func main() {
 	// Initializing a node and connecting to the network
 	ip, err := network.GetLocalIP()
@@ -18,7 +20,7 @@ func main() {
 	}
 
 	// Define a port
-	port := "8888"
+	port := my_port
 
 	// Combine IP and port
 	my_IP := ip + ":" + port
@@ -29,7 +31,7 @@ func main() {
 	if err != nil {
 		fmt.Printf("error: %v\n", err)
 	}
-
+	myNode.TableH.AddEntry(my_IP, "")
 	// The node would then listen for incoming requests and terminal input, and handle them accordingly
 
 	// Channel for terminal input
@@ -57,9 +59,9 @@ func main() {
 	go func() {
 		defer wg.Done()
 		// Simulate opening TCP connections (replace with your actual code)
-		network.BuildConnections(myNode)
+		// network.BuildConnections(myNode, my_port)
 
-		listener, err := net.Listen("tcp", ":8888")
+		listener, err := net.Listen("tcp", ":"+my_port)
 		if err != nil {
 			fmt.Println("Error:", err)
 			return
@@ -84,7 +86,7 @@ func main() {
 			fmt.Println("Received from terminal:", input)
 
 			//create and handle request
-			network.MakeRequest(myNode, input)
+			myNode.CreateRequest(input)
 
 			// // Check if the input is 'exit' to quit the program
 			// if input == "exit\n" {

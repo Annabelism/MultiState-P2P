@@ -72,7 +72,7 @@ func HandleConnectionRequest(n *Node, req protocol.ConnectionRequest) protocol.C
 	}
 
 	// Update Table H with new node's information
-	n.TableH.AddEntry("", req.DestinationIP) // Example entry, adjust according to your logic
+	n.TableH.AddEntry(req.DestinationIP, "") //
 
 	// Propagate the updated Table H to all peers, including the new node
 	// Get all peers from the node's TableH
@@ -108,44 +108,35 @@ func HandleConnectionRequest(n *Node, req protocol.ConnectionRequest) protocol.C
 }
 
 // BuildConnections establishes TCP connections with all peers and stores them in the Connections map
-func BuildConnections(n *Node) error {
-	peers := n.TableH.GetAllNodes() // Assuming GetAllPeers returns a slice of peer IP addresses
+func BuildConnections(n *Node, peer_ip string) (net.Conn, error) {
 
-	for _, peerIP := range peers {
-		// Avoid connecting to self
-		if peerIP == n.IP {
-			continue
-		}
-
-		ln, err := net.Listen("tcp", peerIP) // Replace ":8080" with your port
-		if err != nil {
-			return fmt.Errorf("error listening: %w", err)
-		}
-		defer ln.Close()
-
-		fmt.Printf("Server is listening on peer %s\n", peerIP)
-
-		// Accept connections in a loop
-		for {
-			conn, err := ln.Accept()
-			if err != nil {
-				fmt.Println("Error accepting connection:", err)
-				continue
-			}
-
-			// Handle each connection in a separate goroutine
-			go func(c net.Conn) {
-				defer c.Close()
-				err := n.HandleRequest(c)
-				if err != nil {
-					fmt.Println("Error handling request:", err)
-				}
-			}(conn)
-		}
-
+	conn, err := net.Dial("tcp", peer_ip) // Replace ":8080" with your port
+	if err != nil {
+		return nil, fmt.Errorf("error listening: %w", err)
 	}
+	defer conn.Close()
 
-	return nil
+	fmt.Printf("Server is listening on peer %s\n", peer_ip)
+
+	// Accept connections in a loop
+	// for {
+	// 	conn, err := ln.Accept()
+	// 	if err != nil {
+	// 		fmt.Println("Error accepting connection:", err)
+	// 		continue
+	// 	}
+
+	// 	// Handle each connection in a separate goroutine
+	// 	go func(c net.Conn) {
+	// 		defer c.Close()
+	// 		err := n.HandleRequest(c)
+	// 		if err != nil {
+	// 			fmt.Println("Error handling request:", err)
+	// 		}
+	// 	}(conn)
+	// }
+
+	return conn, nil
 }
 
 // getLocalIP returns the non loopback local IP of the host

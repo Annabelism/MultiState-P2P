@@ -22,12 +22,13 @@ const (
 	ConnectionReqType RequestType = "Connection"
 	DownloadReqType   RequestType = "Download"
 	UpdateReqType     RequestType = "Update"
+	EmptyReqType      RequestType = "Empty"
 )
 
 // Request is a wrapper for different types of requests in the network
 type Request struct {
 	Type    RequestType
-	Payload interface{} 
+	Payload interface{}
 }
 
 // ConnectionRequest is used when a new device wants to join the network
@@ -75,22 +76,21 @@ func CreateDownloadRequest(input_file string, destination_ip string) Request {
 }
 
 func CreateUpdateRequest(action string, index string, value string) Request {
-    var req Request
-    req.Type = UpdateReqType
+	var req Request
+	req.Type = UpdateReqType
 
-    // Corrected: Create a single UpdateTuple with all fields set
-    updateTuple := UpdateTuple{
-        Action: Action(action),
-        Index:  index,
-        Value:  value,
-    }
+	// Corrected: Create a single UpdateTuple with all fields set
+	updateTuple := UpdateTuple{
+		Action: Action(action),
+		Index:  index,
+		Value:  value,
+	}
 
-    req.Payload = UpdateRequest{
-        Updates: []UpdateTuple{updateTuple},
-    }
-    return req
+	req.Payload = UpdateRequest{
+		Updates: []UpdateTuple{updateTuple},
+	}
+	return req
 }
-
 
 // SendRequest sends a request over a TCP connection
 func SendRequest(conn net.Conn, req interface{}) error {
@@ -108,5 +108,3 @@ func SendRequest(conn net.Conn, req interface{}) error {
 
 	return nil
 }
-
-
