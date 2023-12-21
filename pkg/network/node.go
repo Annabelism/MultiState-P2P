@@ -3,7 +3,9 @@ package network
 import (
 	"MultiState-P2P/pkg/protocol"
 	"net"
-	"fmt"
+    "encoding/json"
+    "fmt"
+    "io"
 )
 
 // NodeState represents the state of a node in the network.
@@ -52,6 +54,23 @@ func (n *Node) HandleRequest(conn net.Conn) error {
 
     fmt.Printf("Received connection from %s:%s\n", senderIP, senderPort)
     // Add logic here to handle the request
+
+	jsonData, err := io.ReadAll(conn)
+    if err != nil {
+        return fmt.Errorf("error reading request data: %w", err)
+    }
+
+    // Unmarshal JSON data into a Request struct
+    var req protocol.Request
+    err = json.Unmarshal(jsonData, &req)
+    if err != nil {
+        return fmt.Errorf("error unmarshalling request JSON: %w", err)
+    }
+
+    // Process the request based on the content of the req object
+    // Example:
+    fmt.Printf("Received request of type: %s\n", req.Type)
+    // Add more handling logic based on your application's requirements
 
     return nil
 }

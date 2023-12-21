@@ -123,7 +123,11 @@ func BuildConnections(n *Node) error {
 		}
 		defer ln.Close()
 
+<<<<<<< HEAD
 		fmt.Printf("Server is listening on peer %s\n", peerIP)
+=======
+		fmt.Printf("Server is listening on peer %s", peerIP)
+>>>>>>> 50db08dbfdcd1d29b3167d1aec50f2dc2489974b
 
 		// Accept connections in a loop
 		for {
