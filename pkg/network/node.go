@@ -74,33 +74,10 @@ func (n *Node) HandleRequest(conn net.Conn) error {
 
 	// Process the request based on the content of the req object
 	// Check the request type and process accordingly
+	fmt.Println("REQUEST TYPE: ", req.Type)
 	switch req.Type {
 	case protocol.UpdateReqType:
-		updateReq, ok := req.Payload.(protocol.UpdateRequest)
-		if !ok {
-			return fmt.Errorf("payload is not an UpdateRequest")
-		}
-		// Process each UpdateTuple
-		for _, updateTuple := range updateReq.Updates {
-			fmt.Printf("Action: %s, Index: %s, Value: %s\n", updateTuple.Action, updateTuple.Index, updateTuple.Value)
-			switch updateTuple.Action {
-			case protocol.Add:
-				fmt.Printf("Add Action - Index: %s\n", updateTuple.Index)
-				n.TableH.AddEntry(updateTuple.Index, updateTuple.Value)
-
-			case protocol.Delete:
-				fmt.Printf("Delete Action - Index: %s\n", updateTuple.Index)
-				n.TableH.RemoveEntry(updateTuple.Index, updateTuple.Value)
-
-			case protocol.Remove:
-				fmt.Printf("Remove Action - Index: %s\n", updateTuple.Index)
-				n.TableH.RemoveNode(updateTuple.Index)
-
-			default:
-				// Handle unknown action
-				fmt.Printf("Unknown Action: %s\n", updateTuple.Action)
-			}
-		}
+		HandleUpdateRequest(n, req)
 
 	case protocol.DownloadReqType:
 		downloadReq, ok := req.Payload.(protocol.DownloadRequest)
@@ -125,6 +102,38 @@ func (n *Node) HandleRequest(conn net.Conn) error {
 		ConnectionResp := HandleConnectionRequest(n, connectionReq)
 		fmt.Printf("%#v\n", ConnectionResp)
 	}
+	return nil
+}
+
+func HandleUpdateRequest(n *Node, req protocol.Request) error {
+	fmt.Println("RECEIVED UPDATE REQ")
+	updateReq, ok := req.Payload.(protocol.UpdateRequest)
+	if !ok {
+		return fmt.Errorf("payload is not an UpdateRequest")
+	}
+	// Process each UpdateTuple
+	for _, updateTuple := range updateReq.Updates {
+		fmt.Printf("Action: %s, Index: %s, Value: %s\n", updateTuple.Action, updateTuple.Index, updateTuple.Value)
+		switch updateTuple.Action {
+		case protocol.Add:
+			fmt.Printf("Add Action - Index: %s\n", updateTuple.Index)
+			n.TableH.AddEntry(updateTuple.Index, updateTuple.Value)
+
+		case protocol.Delete:
+			fmt.Printf("Delete Action - Index: %s\n", updateTuple.Index)
+			n.TableH.RemoveEntry(updateTuple.Index, updateTuple.Value)
+
+		case protocol.Remove:
+			fmt.Printf("Remove Action - Index: %s\n", updateTuple.Index)
+			n.TableH.RemoveNode(updateTuple.Index)
+
+		default:
+			// Handle unknown action
+			fmt.Printf("Unknown Action: %s\n", updateTuple.Action)
+		}
+	}
+	fmt.Println("TABLE H AFTER UPDATE: ")
+	PrintTableH(n.TableH)
 	return nil
 }
 

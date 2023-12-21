@@ -2,17 +2,18 @@ package network
 
 import (
 	"MultiState-P2P/pkg/protocol"
+	"encoding/json"
 	"fmt"
 	"net"
 )
 
 // ConnectToNetwork tries to connect to the network via an existing peer and returns the established TCP connection.
-func ConnectToNetwork(n *Node, peerIP string) (net.Conn, error) {
+func ConnectToNetwork(n *Node, peerIP string, my_port string) (net.Conn, error) {
 	conn, err := net.Dial("tcp", peerIP)
 	if err != nil {
 		return nil, err
 	}
-
+	n.TableH.AddEntry(peerIP, "") //
 	// Send a connection request to the peer
 	req := protocol.ConnectionRequest{
 		DestinationIP: n.IP,
@@ -25,6 +26,22 @@ func ConnectToNetwork(n *Node, peerIP string) (net.Conn, error) {
 		conn.Close() // Close the connection in case of an error after establishing it
 		return nil, fmt.Errorf("error @ connection request to peer %s: %w", peerIP, err)
 	}
+
+	//receive json data needs modification
+	listener, err := net.Listen("tcp", ":"+my_port)
+	// Unmarshal the JSON data into a TableH object
+	var receivedTableH TableH
+	err = json.Unmarshal(data, &receivedTableH)
+	if err != nil {
+		fmt.Printf("Error unmarshalling data: %v\n", err)
+		return
+	}
+
+	fmt.Printf("Received TableH: %+v\n", receivedTableH)
+
+	// Update the global TableH instance
+	n.TableH = receivedTableH
+	fmt.Printf("Updated TableH: %+v\n", n.TableH)
 
 	// Return the established connection
 	return conn, nil
@@ -87,15 +104,11 @@ func HandleConnectionRequest(n *Node, req protocol.ConnectionRequest) protocol.C
 		}
 		defer conn.Close()
 
-		// Create an update request to remove this node's entries
-		updateReq := protocol.UpdateTuple{
-			Action: protocol.Add,      // Assuming 'Remove' is a defined action in the 'Action' type
-			Index:  req.DestinationIP, // Assuming 'n.IP' is the IP of the current node
-			Value:  "",                // Value might be empty or contain relevant data based on your implementation
-		}
+		updateReq := protocol.CreateUpdateRequest("add", req.DestinationIP, "")
 
 		// Send the update request to the peer
-		err = protocol.SendRequest(conn, updateReq)
+		//err = protocol.SendRequest(conn, updateReq)
+		err = HandleUpdateRequest(n, updateReq)
 		if err != nil {
 			fmt.Printf("error connecting to peer %s: %v\n", peerIP, err)
 		}

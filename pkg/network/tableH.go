@@ -1,12 +1,27 @@
 package network
 
 import (
+	"encoding/json"
 	"fmt"
+	"net"
 )
 
-// TableH represents a table mapping from an "IP:port" string to a list of filenames.
 type TableH struct {
 	entries map[string][]string
+}
+
+// SendTableH sends the TableH data structure over a network connection
+func SendTableH(table *TableH, conn net.Conn) error { // Encode the TableH structure to JSON
+	data, err := json.Marshal(table)
+	if err != nil {
+		return fmt.Errorf("error marshaling TableH: %v", err)
+	}
+	// Send the encoded data
+	_, err = conn.Write(data)
+	if err != nil {
+		return fmt.Errorf("error sending data over connection: %v", err)
+	}
+	return nil
 }
 
 // NewTableH creates a new table.
