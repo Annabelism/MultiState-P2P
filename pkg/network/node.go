@@ -3,6 +3,7 @@ package network
 import (
 	"MultiState-P2P/pkg/protocol"
 	"net"
+	"fmt"
 )
 
 // NodeState represents the state of a node in the network.
@@ -35,16 +36,22 @@ func NewNode(IP, accessToken string) *Node {
 		Buffer:     make([]protocol.Request, 0),
 		TableH:     NewTableH(),
 		AccessToken: accessToken,
+		Connections: make(map[string]net.Conn),
 	}
 }
 
-// UpdateTableH updates the node's Table H based on the action required.
-func (n *Node) UpdateTableH(action protocol.Action, file string, nodeIP string) {
-	// Implementation of updating Table H goes here
-	// Depending on the action, it will add, delete, or remove an entry
-}
+func (n *Node) HandleRequest(conn net.Conn) error {
+    // Get the sender's address
+    senderAddr := conn.RemoteAddr().String()
 
-// Check if buffer is empty, if not, deal with the request one by one
-func (n *Node) MovingAlongBuffer() {
+    // Split the address into IP and port
+    senderIP, senderPort, err := net.SplitHostPort(senderAddr)
+    if err != nil {
+        return fmt.Errorf("failed to parse remote address: %w", err)
+    }
 
+    fmt.Printf("Received connection from %s:%s\n", senderIP, senderPort)
+    // Add logic here to handle the request
+
+    return nil
 }

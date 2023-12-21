@@ -4,15 +4,26 @@ import (
 	"MultiState-P2P/pkg/network"
 	"MultiState-P2P/pkg/protocol"
 	"fmt"
+	"os"
 )
 
 func main() {
 	// Initializing a node and connecting to the network
-	my_IP := "my ip address"
+	ip, err := network.getLocalIP()
+    if err != nil {
+        fmt.Println("Error getting local IP:", err)
+        os.Exit(1)
+    }
+
+    // Define a port
+    port := "8888"
+
+    // Combine IP and port
+    my_IP := ip + ":" + port
 	peer_IP := "some ip address"
 
 	myNode := network.NewNode(my_IP, "myAccessToken")
-	err := network.ConnectToNetwork(myNode, peer_IP) // IP of a known peer
+	conn, err := network.ConnectToNetwork(myNode, peer_IP) // IP of a known peer
 	if err != nil {
         fmt.Printf("error: %v\n", err)
 	}
