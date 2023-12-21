@@ -55,6 +55,9 @@ func (n *Node) handleShareState(event Event) {
 func (n *Node) handleRequestState(event Event) {
 	// Implement logic for when the node is in the Request state
 	/*
+			timeout := 5 * time.Second
+			timeoutCh := time.After(timeout)
+
 		timeout := 5 * time.Second
 		timeoutCh := time.After(timeout)
 
@@ -68,7 +71,7 @@ func (n *Node) handleRequestState(event Event) {
 				return
 			default:
 				//get peerIP, return connection
-				conn, err = ConnectToNetwork(n, peerIP)
+				conn, err := ConnectToNetwork(n, peerIP)
 				// Continue performing your operations here
 				fmt.Println("Performing operation...")
 				// Simulate some work
@@ -76,10 +79,7 @@ func (n *Node) handleRequestState(event Event) {
 				if err != nil {
 					continue
 				}
-				//pass in peer node
-				protocol.SendRequest(conn, req)
 			}
-		}
 	*/
 }
 
