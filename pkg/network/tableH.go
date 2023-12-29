@@ -2,6 +2,7 @@ package network
 
 import (
 	"encoding/json"
+	"fmt"
 	"net"
 )
 
@@ -38,6 +39,20 @@ func ShareTableH(table *TableH, peerIP string, initial bool) error { // Encode t
 	conn.Close()
 	if err != nil {
 		return err
+	}
+	return nil
+}
+
+// SendTableH sends the TableH data structure over a network connection
+func SendTableH(table *TableH, conn net.Conn) error { // Encode the TableH structure to JSON
+	data, err := json.Marshal(table)
+	if err != nil {
+		return fmt.Errorf("error marshaling TableH: %v", err)
+	}
+	// Send the encoded data
+	_, err = conn.Write(data)
+	if err != nil {
+		return fmt.Errorf("error sending data over connection: %v", err)
 	}
 	return nil
 }

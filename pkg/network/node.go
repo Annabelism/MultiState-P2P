@@ -37,6 +37,7 @@ func (n *Node) Broadcast() error {
 				return err
 			}
 		}
+
 	}
 	return nil
 }

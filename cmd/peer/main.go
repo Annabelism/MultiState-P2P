@@ -18,7 +18,11 @@ func main() {
 	peer_IP := "localhost:8888"
 
 	myNode := network.NewNode(my_IP, "myAccessToken")
+<<<<<<< HEAD
 	res, err := network.ConnectToNetwork(myNode, peer_IP) // IP of a known peer
+=======
+	_, err = network.ConnectToNetwork(myNode, peer_IP, my_port) // IP of a known peer
+>>>>>>> 0598f204d93ffa2d193819fc357a91bf1909cae7
 	if err != nil {
 		fmt.Printf("error: %v\n", err)
 	}
